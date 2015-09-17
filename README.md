@@ -1,5 +1,5 @@
 # WhatsAppening
-----------------------------------------------------------------------------------------------------------------------------------
+
 #####An Android app that lets user post anything, anytime, anywhere. 
 ----------------------------------------------------------------------------------------------------------------------------------
 * Post popularity is fed by the upvotes and downvotes by the users, for the users.
