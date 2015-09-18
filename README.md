@@ -1,4 +1,4 @@
-# WhatsAppening
+# WhatsHappening
 
 #####An Android app that lets user post anything, anytime, anywhere. 
 ----------------------------------------------------------------------------------------------------------------------------------
