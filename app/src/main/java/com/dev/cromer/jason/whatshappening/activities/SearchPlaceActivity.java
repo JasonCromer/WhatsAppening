@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening.activities;
+package com.dev.cromer.jason.whatshappening.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,8 +16,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dev.cromer.jason.whatsappening.logic.PlaceArrayAdapter;
-import com.dev.cromer.jason.whatsappening.R;
+import com.dev.cromer.jason.whatshappening.logic.PlaceArrayAdapter;
+import com.dev.cromer.jason.whatshappening.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;

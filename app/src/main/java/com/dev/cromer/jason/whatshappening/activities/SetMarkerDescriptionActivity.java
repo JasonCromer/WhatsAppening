@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening.activities;
+package com.dev.cromer.jason.whatshappening.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,7 +10,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.dev.cromer.jason.whatsappening.R;
+import com.dev.cromer.jason.whatshappening.R;
 
 
 public class SetMarkerDescriptionActivity extends AppCompatActivity implements TextView.OnEditorActionListener{

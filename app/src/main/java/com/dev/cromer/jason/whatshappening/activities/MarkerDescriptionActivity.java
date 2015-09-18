@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening.activities;
+package com.dev.cromer.jason.whatshappening.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +8,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dev.cromer.jason.whatsappening.R;
-import com.dev.cromer.jason.whatsappening.logic.MarkerLikesPostRequestParams;
-import com.dev.cromer.jason.whatsappening.networking.HttpGetRequest;
-import com.dev.cromer.jason.whatsappening.networking.UpdateMarkerLikesHttpPostRequest;
+import com.dev.cromer.jason.whatshappening.R;
+import com.dev.cromer.jason.whatshappening.logic.MarkerLikesPostRequestParams;
+import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
+import com.dev.cromer.jason.whatshappening.networking.UpdateMarkerLikesHttpPostRequest;
 
 import java.util.concurrent.ExecutionException;
 

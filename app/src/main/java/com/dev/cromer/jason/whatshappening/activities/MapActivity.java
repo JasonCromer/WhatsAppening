@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening.activities;
+package com.dev.cromer.jason.whatshappening.activities;
 
 
 import android.app.Activity;
@@ -12,10 +12,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.dev.cromer.jason.whatsappening.logic.LocalMarkers;
-import com.dev.cromer.jason.whatsappening.logic.NewMarkerPostRequestParams;
-import com.dev.cromer.jason.whatsappening.networking.NewMarkerHttpPostRequest;
-import com.dev.cromer.jason.whatsappening.R;
+import com.dev.cromer.jason.whatshappening.logic.LocalMarkers;
+import com.dev.cromer.jason.whatshappening.logic.NewMarkerPostRequestParams;
+import com.dev.cromer.jason.whatshappening.networking.NewMarkerHttpPostRequest;
+import com.dev.cromer.jason.whatshappening.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;

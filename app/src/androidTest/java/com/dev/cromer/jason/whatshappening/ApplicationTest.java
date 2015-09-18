@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening;
+package com.dev.cromer.jason.whatshappening;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.dev.cromer.jason.whatsappening" >
+    package="com.dev.cromer.jason.whatshappening" >
 
-    <permission android:name="com.dev.cromer.jason.whatsappening.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
+    <permission android:name="com.dev.cromer.jason.whatshappening.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.dev.cromer.jason.whatsappening.permission.MAPS_RECEIVE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -23,7 +23,7 @@
         android:theme="@style/AppTheme"
         android:screenOrientation="portrait" >
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,23 +40,23 @@
             android:value="@string/google_maps_api_key" />
 
         <activity
-            android:name=".activities.MapActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.MapActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activities.SetMarkerTitleActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.SetMarkerTitleActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activities.SearchPlaceActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.SearchPlaceActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activities.SetMarkerDescriptionActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.SetMarkerDescriptionActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activities.MarkerDescriptionActivity"
+            android:name="com.dev.cromer.jason.whatshappening.activities.MarkerDescriptionActivity"
             android:label="@string/app_name" >
         </activity>
     </application>

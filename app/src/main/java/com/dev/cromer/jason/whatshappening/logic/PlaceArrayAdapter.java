@@ -1,4 +1,4 @@
-package com.dev.cromer.jason.whatsappening.logic;
+package com.dev.cromer.jason.whatshappening.logic;
 
 
 import android.content.Context;

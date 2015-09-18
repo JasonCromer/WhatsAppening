@@ -1,9 +1,9 @@
-package com.dev.cromer.jason.whatsappening.networking;
+package com.dev.cromer.jason.whatshappening.networking;
 
 
 import android.os.AsyncTask;
 
-import com.dev.cromer.jason.whatsappening.logic.MarkerLikesPostRequestParams;
+import com.dev.cromer.jason.whatshappening.logic.NewMarkerPostRequestParams;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,13 +17,17 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class UpdateMarkerLikesHttpPostRequest extends AsyncTask<MarkerLikesPostRequestParams, String, String> {
+public class NewMarkerHttpPostRequest extends AsyncTask<NewMarkerPostRequestParams, String, String> {
 
 
     @Override
-    protected String doInBackground(MarkerLikesPostRequestParams... params) {
+    protected String doInBackground(NewMarkerPostRequestParams... params) {
         String httpURL = params[0].getUrl();
-        String voteType = params[0].getVoteType();
+        String latitude = params[0].getLatitude();
+        String longitude = params[0].getLongitude();
+        String markerTitle = params[0].getMarkerTitle();
+        String markerDescription = params[0].getMarkerDescription();
+
         HttpURLConnection httpURLConnection;
         String data;
         String result = null;
@@ -42,7 +46,10 @@ public class UpdateMarkerLikesHttpPostRequest extends AsyncTask<MarkerLikesPostR
 
             //Create a new JSON object
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("voteType", voteType);
+            jsonObject.put("latitude", latitude);
+            jsonObject.put("longitude", longitude);
+            jsonObject.put("markerTitle", markerTitle);
+            jsonObject.put("markerDescription", markerDescription);
             data = jsonObject.toString();
 
             //Write the data to an output stream
@@ -71,4 +78,5 @@ public class UpdateMarkerLikesHttpPostRequest extends AsyncTask<MarkerLikesPostR
 
         return result;
     }
+
 }
