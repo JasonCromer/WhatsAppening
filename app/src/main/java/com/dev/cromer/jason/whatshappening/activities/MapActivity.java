@@ -2,15 +2,12 @@ package com.dev.cromer.jason.whatshappening.activities;
 
 
 import android.app.Activity;
-import android.app.UiModeManager;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -98,11 +95,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        /*Context thisConx = this.getApplicationContext();
-        UiModeManager manager = (UiModeManager) thisConx.getSystemService(Context.UI_MODE_SERVICE);
-        Log.d("TAG/BEFORE: ", String.valueOf(manager.getNightMode()));
-        manager.setNightMode(UiModeManager.MODE_NIGHT_YES);
-        Log.d("TAG/AFTER: ", String.valueOf(manager.getNightMode())); */
     }
 
 
