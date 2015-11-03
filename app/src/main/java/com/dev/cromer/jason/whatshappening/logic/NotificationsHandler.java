@@ -3,10 +3,12 @@ package com.dev.cromer.jason.whatshappening.logic;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 
-public class NotificationsHandler implements DialogInterface.OnClickListener {
+public class NotificationsHandler implements DialogInterface.OnClickListener, DialogInterface.OnDismissListener {
 
     private NotificationInstructionFactory instructionFactory;
+    private int dialogCount;
 
     //Constants
     private static final String newMarkerTitle = "Creating a Post";
@@ -24,6 +26,7 @@ public class NotificationsHandler implements DialogInterface.OnClickListener {
 
     public NotificationsHandler(Context context){
         instructionFactory = new NotificationInstructionFactory(context);
+        dialogCount = 0;
     }
 
     public void displaySearchInfoDialog(){
@@ -50,9 +53,27 @@ public class NotificationsHandler implements DialogInterface.OnClickListener {
         instructionFactory.showAlertDialog();
     }
 
-    //Create chaining effect for the multiple dialogs
+    public void displayChainingDialogs(){
+        //Create chaining effect for the multiple dialogs using dialogCount;
+        displaySearchInfoDialog();
+    }
+
+
+
     @Override
     public void onClick(DialogInterface dialog, int which) {
+        dialogCount++;
         dialog.dismiss();
+        onDismiss(dialog);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if(dialogCount == 1){
+            displayNewMarkerDialog();
+        }
+        if(dialogCount == 2){
+            displayVoteInfoDialog();
+        }
     }
 }

@@ -105,6 +105,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         //Instantiate sharedPreferenceManager and display alerts
         preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         displayFirstTimeInfoMessages();
+        setFirstTimeUser();
 
     }
 
@@ -292,11 +293,8 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
     private void displayFirstTimeInfoMessages(){
         if(isFirstTimeUser()){
             NotificationsHandler notificationsHandler = new NotificationsHandler(this);
-            notificationsHandler.displaySearchInfoDialog();
-            notificationsHandler.displayNewMarkerDialog();
-            notificationsHandler.displayVoteInfoDialog();
+            notificationsHandler.displayChainingDialogs();
         }
-
     }
 
     private boolean isFirstTimeUser(){
