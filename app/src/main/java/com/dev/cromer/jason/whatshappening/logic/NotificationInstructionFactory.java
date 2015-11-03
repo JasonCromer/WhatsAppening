@@ -3,13 +3,12 @@ package com.dev.cromer.jason.whatshappening.logic;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.view.ContextThemeWrapper;
 
-public class NotificationInstructionFactory implements DialogInterface.OnClickListener {
+public class NotificationInstructionFactory {
 
     private AlertDialog.Builder alertDialogBuilder;
-    private ContextThemeWrapper themeWrapper;
+    static ContextThemeWrapper themeWrapper;
 
 
     public NotificationInstructionFactory(Context context){
@@ -30,28 +29,19 @@ public class NotificationInstructionFactory implements DialogInterface.OnClickLi
 
 
     public void setAlertTitle(String title){
-
+        alertDialogBuilder.setTitle(title);
     }
 
-
-
-
-
-
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-
+    public void setAlertMessage(String message){
+        alertDialogBuilder.setMessage(message);
     }
-    
 
+    public void setButtonText(String buttonText, AlertDialog.OnClickListener listener){
+        alertDialogBuilder.setPositiveButton(buttonText, listener);
+    }
 
-
-
-
-
-    /*
-        TODO: dialogs for: Create new marker, search, and voting
-     */
+    public void showAlertDialog(){
+        alertDialogBuilder.show();
+    }
 
 }
