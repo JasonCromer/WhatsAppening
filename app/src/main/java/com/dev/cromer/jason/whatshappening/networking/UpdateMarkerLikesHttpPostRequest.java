@@ -26,7 +26,7 @@ public class UpdateMarkerLikesHttpPostRequest extends AsyncTask<MarkerLikesPostR
     @Override
     protected String doInBackground(MarkerLikesPostRequestParams... params) {
         String httpURL = params[0].getUrl();
-        String voteType = params[0].getVoteType();
+        String likeType = params[0].getLikeType();
         HttpURLConnection httpURLConnection;
         String data;
         String result = null;
@@ -45,7 +45,7 @@ public class UpdateMarkerLikesHttpPostRequest extends AsyncTask<MarkerLikesPostR
 
             //Create a new JSON object
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("voteType", voteType);
+            jsonObject.put("likeType", likeType);
             data = jsonObject.toString();
 
             //Write the data to an output stream

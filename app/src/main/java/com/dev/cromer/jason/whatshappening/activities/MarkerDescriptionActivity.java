@@ -1,8 +1,8 @@
 package com.dev.cromer.jason.whatshappening.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dev.cromer.jason.whatshappening.R;
-import com.dev.cromer.jason.whatshappening.logic.DailyVoteHandler;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.UpdateMarkerLikesHttpPostRequest;
@@ -25,21 +24,19 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     private TextView markerDescriptionTextView;
     private TextView markerLikesTextView;
-    private ImageButton upvoteButton;
-    private ImageButton downvoteButton;
+    private ImageButton likeButton;
     private String markerDescription = "";
     private String markerLikes = "";
-    private ListView commentsListView;
+    static ListView commentsListView;
     private static String markerID;
+    private boolean hasLiked = false;
     private static SharedPreferences preferences;
 
     //constants
     private static final int DEFAULT_LIKES = 0;
-    private static final String NUM_VOTES_PREFERENCE = "NUM_VOTES";
-    private static final String OLD_DATE_PREFERENCE = "OLD_DATE";
-    private static final String NO_OLD_DATE_AVAILABLE = "NONE";
-    private static final String UPVOTE_STRING = "upVote";
-    private static final String DOWNVOTE_STRING = "downVote";
+    private static final boolean DEFAULT_HAS_LIKED = false;
+    private static final String LIKED_STRING = "like";
+    private static final String DISLIKED_STRING = "dislike";
     private static final String GET_LIKES_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/get_marker_likes/";
     private static final String GET_DESCRIPTION_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/get_marker_description/";
     private static final String UPDATE_LIKES_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/update_marker_likes/";
@@ -51,20 +48,18 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         markerLikesTextView = (TextView) findViewById(R.id.markerLikesTextView);
         markerDescriptionTextView = (TextView) findViewById(R.id.markerDescriptionTextView);
-        upvoteButton = (ImageButton) findViewById(R.id.upvoteButton);
-        downvoteButton = (ImageButton) findViewById(R.id.downvoteButton);
+        likeButton = (ImageButton) findViewById(R.id.likeButton);
         commentsListView = (ListView) findViewById(R.id.commentsListView);
 
-        upvoteButton.setOnClickListener(this);
-        downvoteButton.setOnClickListener(this);
-
-        //Get the shared preference for amount of votes made by the user
-        preferences = this.getPreferences(Context.MODE_PRIVATE);
-
+        likeButton.setOnClickListener(this);
 
         //Get the ID from the marker thats been clicked on, on the map
         Intent thisIntent = getIntent();
         markerID = thisIntent.getStringExtra("MARKER_ID");
+
+        //Get the shared preference to see if user has liked or disliked the post
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        checkUserLike();
 
         //getMarkerDescription and likes from database via passed in Marker ID
         getMarkerDescription();
@@ -119,26 +114,20 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
 
     private void displayMarkerLikes(){
-        if(markerLikes != null && Integer.parseInt(markerLikes) <= 1){
-            final CharSequence numLikesText = markerLikes + " person likes this post";
-            markerLikesTextView.setText(numLikesText);
-        }
-        else if(markerLikes != null && Integer.parseInt(markerLikes) > 1){
-            final CharSequence numLikesText = markerLikes + " people like this post";
-            markerLikesTextView.setText(numLikesText);
+        if(markerLikes != null){
+            markerLikesTextView.setText(markerLikes);
         }
         else{
-            final CharSequence noLikesText = "No likes yet";
-            markerLikesTextView.setText(noLikesText);
+            markerLikesTextView.setText(DEFAULT_LIKES);
         }
     }
 
 
-    private void updateMarkerLikes(String voteType){
+    private void updateMarkerLikes(String likeType){
         final String url = UPDATE_LIKES_ENDPOINT + markerID;
 
         //Create an object containing necessary parameters for our post request
-        MarkerLikesPostRequestParams params = new MarkerLikesPostRequestParams(url, voteType);
+        MarkerLikesPostRequestParams params = new MarkerLikesPostRequestParams(url, likeType);
 
         UpdateMarkerLikesHttpPostRequest postRequest = new UpdateMarkerLikesHttpPostRequest();
 
@@ -150,7 +139,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             e.printStackTrace();
         }
 
-        //Update likes after submitting like/dislike
+        //Get and display likes after submitting like/dislike
         getMarkerLikes();
         displayMarkerLikes();
     }
@@ -158,39 +147,39 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public void onClick(View v) {
-        //Create daily vote handler
-        DailyVoteHandler dailyVoteHandler = new DailyVoteHandler(preferences);
-
-        //Check if it is a new day, if so, then NUM_VOTES is reset to 0
-        final String oldDateString = preferences.getString(OLD_DATE_PREFERENCE, NO_OLD_DATE_AVAILABLE);
-        dailyVoteHandler.checkIfNewDay(oldDateString);
-
-        //Get number of votes. Default likes is set to zero for first time vote case
-        final int NUM_VOTES = preferences.getInt(NUM_VOTES_PREFERENCE, DEFAULT_LIKES);
-
-        if(v == upvoteButton && NUM_VOTES < 5){
-            incrementNumberOfVotes(NUM_VOTES);
-            updateMarkerLikes(UPVOTE_STRING);
+        if(v == likeButton && !hasLiked) {
+            likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+            updateMarkerLikes(LIKED_STRING);
+            saveUserLike();
+            hasLiked = true;
         }
-        if(v == downvoteButton && NUM_VOTES < 5){
-            incrementNumberOfVotes(NUM_VOTES);
-            updateMarkerLikes(DOWNVOTE_STRING);
-        }
-
-        //Create date stamp to compare for future date checks
-        else if(NUM_VOTES >= 5){
-            Toast.makeText(this.getApplicationContext(), "Sorry, you've already voted 5 times today", Toast.LENGTH_SHORT).show();
-            dailyVoteHandler.storeOldDateInPreferences();
+        else if(v == likeButton){
+            likeButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            updateMarkerLikes(DISLIKED_STRING);
+            saveUserDislike();
+            hasLiked = false;
         }
     }
 
-
-    private void incrementNumberOfVotes(int NUM_VOTES){
+    private void saveUserLike(){
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(NUM_VOTES_PREFERENCE, NUM_VOTES + 1);
+        editor.putBoolean(markerID, true);
         editor.apply();
     }
 
+    private void saveUserDislike(){
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(markerID, false);
+        editor.apply();
+    }
+
+    private void checkUserLike(){
+        final boolean userHasLiked = preferences.getBoolean(markerID, DEFAULT_HAS_LIKED);
+        if(userHasLiked){
+            likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+            hasLiked = true;
+        }
+    }
 
     public void setSimpleList(ListView listView){
 
@@ -201,7 +190,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             commentList.add("I am a comment at index " + i);
         }
 
-        listView.setAdapter(new ArrayAdapter<String>(MarkerDescriptionActivity.this,
+        listView.setAdapter(new ArrayAdapter<>(MarkerDescriptionActivity.this,
                 R.layout.comment_item, R.id.commentTextView, commentList));
     }
 

@@ -18,8 +18,7 @@ public class NotificationsHandler implements DialogInterface.OnClickListener, Di
             "map to create a new post.";
     private static final String searchDescription = "Use the search bar at the top to search " +
             "anywhere around the world.";
-    private static final String voteDescription = "Upvote/Downvote user's posts.. but beware: " +
-            "you only have 5 votes per day. Use them wisely.";
+    private static final String voteDescription = "Like user's posts and comment on them.";
     private static final String nextButtonText = "Next";
     private static final String doneButtonText = "Got it";
 
