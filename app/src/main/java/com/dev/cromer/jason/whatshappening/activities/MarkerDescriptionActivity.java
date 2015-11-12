@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,17 +18,18 @@ import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.UpdateMarkerLikesHttpPostRequest;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView markerDescriptionTextView;
     private TextView markerLikesTextView;
-    private TextView commentsButtonTextView;
     private ImageButton upvoteButton;
     private ImageButton downvoteButton;
     private String markerDescription = "";
     private String markerLikes = "";
+    private ListView commentsListView;
     private static String markerID;
     private static SharedPreferences preferences;
 
@@ -48,11 +51,10 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         markerLikesTextView = (TextView) findViewById(R.id.markerLikesTextView);
         markerDescriptionTextView = (TextView) findViewById(R.id.markerDescriptionTextView);
-        commentsButtonTextView = (TextView) findViewById(R.id.commentsButtonTextView);
         upvoteButton = (ImageButton) findViewById(R.id.upvoteButton);
         downvoteButton = (ImageButton) findViewById(R.id.downvoteButton);
+        commentsListView = (ListView) findViewById(R.id.commentsListView);
 
-        commentsButtonTextView.setOnClickListener(this);
         upvoteButton.setOnClickListener(this);
         downvoteButton.setOnClickListener(this);
 
@@ -71,6 +73,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Set marker markerDescription and likes in their textviews
         displayMarkerDescription();
         displayMarkerLikes();
+
+        //Display our comments
+        setSimpleList(commentsListView);
     }
 
 
@@ -114,12 +119,16 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
 
     private void displayMarkerLikes(){
-        if(markerLikes != null){
-            final CharSequence numLikesText = markerLikes + " likes";
+        if(markerLikes != null && Integer.parseInt(markerLikes) <= 1){
+            final CharSequence numLikesText = markerLikes + " person likes this post";
+            markerLikesTextView.setText(numLikesText);
+        }
+        else if(markerLikes != null && Integer.parseInt(markerLikes) > 1){
+            final CharSequence numLikesText = markerLikes + " people like this post";
             markerLikesTextView.setText(numLikesText);
         }
         else{
-            final CharSequence noLikesText = "0 likes";
+            final CharSequence noLikesText = "No likes yet";
             markerLikesTextView.setText(noLikesText);
         }
     }
@@ -159,12 +168,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Get number of votes. Default likes is set to zero for first time vote case
         final int NUM_VOTES = preferences.getInt(NUM_VOTES_PREFERENCE, DEFAULT_LIKES);
 
-        //Open comments activity
-        if(v == commentsButtonTextView){
-            Intent commentsIntent = new Intent(this, CommentsActivity.class);
-            startActivity(commentsIntent);
-        }
-
         if(v == upvoteButton && NUM_VOTES < 5){
             incrementNumberOfVotes(NUM_VOTES);
             updateMarkerLikes(UPVOTE_STRING);
@@ -175,7 +178,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         }
 
         //Create date stamp to compare for future date checks
-        else if(NUM_VOTES >= 5 && v != commentsButtonTextView){
+        else if(NUM_VOTES >= 5){
             Toast.makeText(this.getApplicationContext(), "Sorry, you've already voted 5 times today", Toast.LENGTH_SHORT).show();
             dailyVoteHandler.storeOldDateInPreferences();
         }
@@ -188,6 +191,19 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         editor.apply();
     }
 
+
+    public void setSimpleList(ListView listView){
+
+        //Sample arraylist until we retrieve our comments from DB
+        ArrayList<String> commentList = new ArrayList<>();
+
+        for(int i = 0; i < 10; i ++){
+            commentList.add("I am a comment at index " + i);
+        }
+
+        listView.setAdapter(new ArrayAdapter<String>(MarkerDescriptionActivity.this,
+                R.layout.comment_item, R.id.commentTextView, commentList));
+    }
 
 
     @Override

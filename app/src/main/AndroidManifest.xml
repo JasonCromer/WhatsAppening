@@ -79,14 +79,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.dev.cromer.jason.whatshappening.activities.MapActivity" />
         </activity>
-        <activity
-            android:name=".activities.CommentsActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.MarkerDescriptionActivity" />
-        </activity>
     </application>
 
 </manifest>

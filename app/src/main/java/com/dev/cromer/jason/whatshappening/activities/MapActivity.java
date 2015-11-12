@@ -168,7 +168,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         if(v == searchBarEditText){
             //Start intent for user to search a place
             Intent searchIntent = new Intent(this, SearchPlaceActivity.class);
-            searchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivityForResult(searchIntent, SEARCH_PLACE_REQ_CODE);
         }
     }
@@ -400,7 +399,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
             if (lastOpenedMarker.equals(marker)) {
                 Intent descriptionIntent = new Intent(getApplicationContext(), MarkerDescriptionActivity.class);
                 descriptionIntent.putExtra("MARKER_ID", String.valueOf(markerIDHashMap.get(marker.getId())));
-                descriptionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(descriptionIntent);
 
                 //if so, nullify it
