@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:id="@+id/popUpLayout">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:hint="@string/comment_text"
+        android:maxLength="140"
+        android:imeOptions="actionDone"
+        android:inputType="textAutoComplete|textAutoCorrect|textCapSentences"
+        android:maxLines="4"
+        android:ems="10"
+        android:id="@+id/commentEditText" />
+
+</RelativeLayout>
