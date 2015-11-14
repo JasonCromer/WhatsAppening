@@ -3,14 +3,17 @@ package com.dev.cromer.jason.whatshappening.logic;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.util.Log;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class NotificationsHandler implements DialogInterface.OnClickListener, DialogInterface.OnDismissListener {
 
     private NotificationInstructionFactory instructionFactory;
     private int dialogCount;
+    private Context applicationContext;
 
     //Constants
+    private static final String ALERT_DIALOG_PREFERENCES = "FIRST_USER_DIALOG_PREFS";
     private static final String newMarkerTitle = "Creating a Post";
     private static final String voteTitle = "Voting Posts";
     private static final String searchTitle = "Search the World";
@@ -24,8 +27,9 @@ public class NotificationsHandler implements DialogInterface.OnClickListener, Di
 
 
     public NotificationsHandler(Context context){
-        instructionFactory = new NotificationInstructionFactory(context);
-        dialogCount = 0;
+        this.applicationContext = context;
+        this.instructionFactory = new NotificationInstructionFactory(context);
+        this.dialogCount = 0;
     }
 
     public void displaySearchInfoDialog(){
@@ -57,6 +61,13 @@ public class NotificationsHandler implements DialogInterface.OnClickListener, Di
         displaySearchInfoDialog();
     }
 
+    private void setFirstTimeUser(){
+        SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(applicationContext);
+        final boolean isFirstTimeUser = false;
+        SharedPreferences.Editor editor = preferenceManager.edit();
+        editor.putBoolean(ALERT_DIALOG_PREFERENCES, isFirstTimeUser);
+        editor.apply();
+    }
 
 
     @Override
@@ -68,11 +79,17 @@ public class NotificationsHandler implements DialogInterface.OnClickListener, Di
 
     @Override
     public void onDismiss(DialogInterface dialog) {
+
+        //Chain dialogs after each one is dismissed
         if(dialogCount == 1){
             displayNewMarkerDialog();
         }
         if(dialogCount == 2){
             displayVoteInfoDialog();
+        }
+        if(dialogCount == 3){
+            //Check if user has finished tutorial
+            setFirstTimeUser();
         }
     }
 }

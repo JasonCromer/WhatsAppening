@@ -64,7 +64,7 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
 
     //constants
     private static final String ALERT_DIALOG_PREFERENCES = "FIRST_USER_DIALOG_PREFS";
-    private static final int CAMERA_ZOOM = 18;
+    private static final int CAMERA_ZOOM = 12;
     private static final int GOOGLE_API_CLIENT_ID = 0;
     private static final double LAT_LNG_OFFSET = 1.5;
     private static final int POST_NEW_MARKER_REQ_CODE = 1;
@@ -105,8 +105,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         //Instantiate sharedPreferenceManager and display alerts
         preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         displayFirstTimeInfoMessages();
-        setFirstTimeUser();
-
     }
 
 
@@ -300,17 +298,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         final boolean defaultValue = true;
         return preferenceManager.getBoolean(ALERT_DIALOG_PREFERENCES, defaultValue);
     }
-
-    private void setFirstTimeUser(){
-        final boolean isFirstTimeUser = false;
-        SharedPreferences.Editor editor = preferenceManager.edit();
-        editor.putBoolean(ALERT_DIALOG_PREFERENCES, isFirstTimeUser);
-        editor.apply();
-    }
-
-
-
-
 
 
 
