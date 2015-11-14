@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.preference.PreferenceManager;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +15,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
@@ -220,12 +218,14 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
 
+
         //Set custom animation (found in values/styles.xml folder
         popupWindow.setAnimationStyle(R.style.Animation);
 
         //Show the popup at bottom of screen with margin.
         //Params are (View parent, gravity, int x, int y);
         popupWindow.showAtLocation(v, Gravity.BOTTOM, popupMarginX, popupMarginY);
+
     }
 
     private void saveUserLike(){
@@ -263,7 +263,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                 R.layout.comment_item, R.id.commentTextView, commentList));
     }
 
-
     @Override
     public boolean onNavigateUp(){
 
@@ -297,6 +296,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         return false;
     }
 
+
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         if(scrollState == SCROLL_STATE_FLING || scrollState == SCROLL_STATE_TOUCH_SCROLL){
@@ -311,4 +311,5 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
     }
+
 }
