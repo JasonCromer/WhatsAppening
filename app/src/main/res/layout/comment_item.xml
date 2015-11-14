@@ -5,11 +5,12 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:maxLines="3"
-        android:maxLength="140"
+        android:layout_height="75dp"
+        android:maxLines="2"
+        android:maxLength="90"
         android:singleLine="false"
         android:padding="10dp"
+        android:text=""
         android:id="@+id/commentTextView"
         style="@style/Base.TextAppearance.AppCompat.Small"
         android:textColor="#000000"/>
