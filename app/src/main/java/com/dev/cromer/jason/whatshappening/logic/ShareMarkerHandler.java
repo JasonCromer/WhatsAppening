@@ -38,7 +38,7 @@ public class ShareMarkerHandler {
 
     private String formatLocationURL(LatLng latlng, int zoomLevel){
         String lat = Double.toString(latlng.latitude);
-        String lng = Double.toString(latlng.latitude);
+        String lng = Double.toString(latlng.longitude);
         String urlStart = "http://maps.google.com/maps?q=" + lat + "," + lng;
         String urlEnd = "&z=" + String.valueOf(zoomLevel);
 
