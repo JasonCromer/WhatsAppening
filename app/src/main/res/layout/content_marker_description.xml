@@ -15,7 +15,6 @@
         android:layout_below="@+id/likeButton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:paddingTop="10dp"
         android:id="@+id/lineView" />
 
     <TextView
@@ -63,8 +62,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/commentsListView"
         android:layout_centerHorizontal="true"
-        android:paddingTop="10dp"
-        android:layout_margin="5dp"
         android:layout_below="@+id/likeButton" />
 
 </RelativeLayout>

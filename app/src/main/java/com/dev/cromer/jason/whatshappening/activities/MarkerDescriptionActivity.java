@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.preference.PreferenceManager;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,9 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -35,7 +38,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
-                                EditText.OnEditorActionListener {
+                                EditText.OnEditorActionListener, AbsListView.OnScrollListener {
 
     private TextView markerDescriptionTextView;
     private TextView markerLikesTextView;
@@ -76,6 +79,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         likeButton.setOnClickListener(this);
         floatingActionButton.setOnClickListener(this);
+        commentsListView.setOnScrollListener(this);
 
         //Get the ID from the marker thats been clicked on, on the map
         Intent thisIntent = getIntent();
@@ -271,7 +275,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if(actionId == EditorInfo.IME_ACTION_DONE){
-
             //Create objects for our POST request
             MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler();
             final String postCommentUrl = POST_COMMENT_ENDPOINT + markerID;
@@ -292,5 +295,20 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if(scrollState == SCROLL_STATE_FLING || scrollState == SCROLL_STATE_TOUCH_SCROLL){
+            //Hide our floating action bar when scrolling
+            floatingActionButton.setVisibility(View.GONE);
+        }
+        else{
+            floatingActionButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
     }
 }
