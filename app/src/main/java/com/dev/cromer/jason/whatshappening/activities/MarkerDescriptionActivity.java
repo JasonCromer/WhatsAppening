@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
@@ -13,6 +15,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -171,25 +174,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     public void onClick(View v) {
         if(v == floatingActionButton){
             //Inflate our custom layout
-            final View inflatedView = layoutInflater.inflate(R.layout.pop_up_comment, null, false);
-            userComment = (EditText) inflatedView.findViewById(R.id.commentEditText);
-            userComment.setOnEditorActionListener(this);
-
-            //Get devize screen size
-            Display display = getWindowManager().getDefaultDisplay();
-            final Point size = new Point();
-            display.getSize(size);
-
-            //Set height depending on screen size
-            popupWindow = new PopupWindow(inflatedView, size.x - 50, size.y - 400, true);
-
-            popupWindow.setBackgroundDrawable(getResources().getDrawable(R.drawable.pop_up_background));
-            popupWindow.setFocusable(true);
-            popupWindow.setOutsideTouchable(true);
-
-            //Show the popup at bottom of screen with margin
-            popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, 100);
-
+            inflatePopUpWindow(v);
         }
         if(v == likeButton && !hasLiked) {
             likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
@@ -203,6 +188,32 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             saveUserDislike();
             hasLiked = false;
         }
+    }
+
+    private void inflatePopUpWindow(View v){
+        final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.popUpLayout);
+        final View inflatedView = layoutInflater.inflate(R.layout.pop_up_comment, viewGroup, false);
+        userComment = (EditText) inflatedView.findViewById(R.id.commentEditText);
+        userComment.setOnEditorActionListener(this);
+
+        //Get devize screen size
+        Display display = getWindowManager().getDefaultDisplay();
+        final Point size = new Point();
+        display.getSize(size);
+
+        //Set height depending on screen size
+        popupWindow = new PopupWindow(inflatedView, size.x, size.y - 600, true);
+
+        popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.pop_up_background));
+        popupWindow.setFocusable(true);
+        popupWindow.setOutsideTouchable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.setElevation(8.0f);
+        }
+
+        //Show the popup at bottom of screen with margin.
+        //Params are (View parent, gravity, int x, int y);
+        popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, 0);
     }
 
     private void saveUserLike(){
