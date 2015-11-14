@@ -1,7 +1,6 @@
 package com.dev.cromer.jason.whatshappening.logic;
 
 
-import android.util.Log;
 
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.NewCommentHttpRequest;
@@ -20,7 +19,6 @@ public class MarkerCommentsHandler {
     public void postComment(MarkerCommentParams commentObject){
 
         NewCommentHttpRequest commentHttpRequest = new NewCommentHttpRequest();
-        Log.d("TAG IN HANDLER....", commentObject.getCommentString());
         commentHttpRequest.execute(commentObject);
     }
 

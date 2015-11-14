@@ -9,7 +9,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -177,13 +176,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             inflatePopUpWindow(v);
         }
         if(v == likeButton && !hasLiked) {
-            likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_black_24dp));
             updateMarkerLikes(LIKED_STRING);
             saveUserLike();
             hasLiked = true;
         }
         else if(v == likeButton){
-            likeButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_border_black_24dp));
             updateMarkerLikes(DISLIKED_STRING);
             saveUserDislike();
             hasLiked = false;
@@ -242,7 +241,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         if(userHasLiked){
 
             //Change image to the filled-in heart image
-            likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_black_24dp));
             hasLiked = true;
         }
     }
@@ -279,7 +278,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
             //Convert our EditText input to a String
             final String comment = userComment.getText().toString();
-            Log.d("TAG......", comment);
 
             //Post new comment to our database
             MarkerCommentParams commentParams = new MarkerCommentParams(comment, postCommentUrl);

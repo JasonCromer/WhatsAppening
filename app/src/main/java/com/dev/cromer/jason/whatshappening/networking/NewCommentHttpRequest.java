@@ -2,7 +2,6 @@ package com.dev.cromer.jason.whatshappening.networking;
 
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 
@@ -42,7 +41,6 @@ public class NewCommentHttpRequest extends AsyncTask<MarkerCommentParams, Void, 
         String comment = params[0].getCommentString();
         String httpURL = params[0].getUrl();
 
-        Log.d("TAG IN HTTP REQUEST...", comment);
         try{
             //Connect
             httpURLConnection = (HttpURLConnection) (new URL(httpURL).openConnection());
