@@ -18,8 +18,10 @@ public class MarkerCommentsHandler {
 
     public void postComment(MarkerCommentParams commentObject){
 
-        NewCommentHttpRequest commentHttpRequest = new NewCommentHttpRequest();
-        commentHttpRequest.execute(commentObject);
+        if(!commentObject.getCommentString().isEmpty()){
+            NewCommentHttpRequest commentHttpRequest = new NewCommentHttpRequest();
+            commentHttpRequest.execute(commentObject);
+        }
     }
 
     public ArrayList<String> getComments(String url){

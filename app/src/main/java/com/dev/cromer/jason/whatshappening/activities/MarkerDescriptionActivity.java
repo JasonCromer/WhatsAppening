@@ -1,7 +1,6 @@
 package com.dev.cromer.jason.whatshappening.activities;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.preference.PreferenceManager;
@@ -9,10 +8,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -27,10 +29,12 @@ import android.widget.Toast;
 
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
+import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.UpdateMarkerLikesHttpPostRequest;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +49,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private String markerLikes = "";
     static ListView commentsListView;
     private String markerID;
+    private LatLng markerPosition;
     private boolean hasLiked = false;
     private SharedPreferences preferences;
     private FloatingActionButton floatingActionButton;
@@ -79,9 +84,11 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         floatingActionButton.setOnClickListener(this);
         commentsListView.setOnScrollListener(this);
 
-        //Get the ID from the marker thats been clicked on, on the map
-        Intent thisIntent = getIntent();
-        markerID = thisIntent.getStringExtra("MARKER_ID");
+        //Get the ID and position from the marker thats been clicked on, on the map
+        markerID = getIntent().getStringExtra("MARKER_ID");
+        Bundle bundle = getIntent().getParcelableExtra("MARKER_LOCATION");
+        markerPosition = bundle.getParcelable("LATLNG");
+        Log.d("MARKER_LOCATION: ", String.valueOf(markerPosition));
 
         //Get the shared preference to see if user has liked or disliked the post
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -98,7 +105,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Display our comments
         setAndDisplayComments(commentsListView);
     }
-
 
     private void getMarkerDescription(){
         final String url = GET_DESCRIPTION_ENDPOINT + markerID;
@@ -310,6 +316,32 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if(id == R.id.socialMediaShare){
+
+            //Default text
+            final String defaultMessage = "This is Whats Happening: ";
+            final int zoomLevel = 18;
+            ShareMarkerHandler shareMarkerHandler = new ShareMarkerHandler(this);
+            shareMarkerHandler.shareMarkerLocation(markerPosition, zoomLevel, defaultMessage +
+                "\n" + markerDescription + "\n");
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_marker_description, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
 }

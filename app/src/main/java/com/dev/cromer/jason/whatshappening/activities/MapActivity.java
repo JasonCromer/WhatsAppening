@@ -397,9 +397,6 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
 
             //is the marker already open
             if (lastOpenedMarker.equals(marker)) {
-                Intent descriptionIntent = new Intent(getApplicationContext(), MarkerDescriptionActivity.class);
-                descriptionIntent.putExtra("MARKER_ID", String.valueOf(markerIDHashMap.get(marker.getId())));
-                startActivity(descriptionIntent);
 
                 //if so, nullify it
                 lastOpenedMarker = null;
@@ -424,7 +421,11 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         //Open marker description
         Intent descriptionIntent = new Intent(getApplicationContext(), MarkerDescriptionActivity.class);
         descriptionIntent.putExtra("MARKER_ID", String.valueOf(markerIDHashMap.get(marker.getId())));
-        descriptionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        //Make our LatLng a parcelable object to pass to intent
+        Bundle args = new Bundle();
+        args.putParcelable("LATLNG", marker.getPosition());
+        descriptionIntent.putExtra("MARKER_LOCATION", args);
         startActivity(descriptionIntent);
     }
 
