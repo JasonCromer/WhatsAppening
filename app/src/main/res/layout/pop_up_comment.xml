@@ -10,8 +10,8 @@
         android:hint="@string/comment_text"
         android:maxLength="140"
         android:imeOptions="actionDone"
-        android:inputType="textAutoComplete|textAutoCorrect|textCapSentences"
-        android:maxLines="4"
+        android:inputType="textAutoCorrect|textCapSentences"
+        android:maxLines="3"
         android:ems="10"
         android:id="@+id/commentEditText" />
 

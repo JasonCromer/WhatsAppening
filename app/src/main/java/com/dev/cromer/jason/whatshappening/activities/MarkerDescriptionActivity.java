@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -95,7 +95,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         displayMarkerLikes();
 
         //Display our comments
-        setSimpleList(commentsListView);
+        setAndDisplayComments(commentsListView);
     }
 
 
@@ -191,29 +191,38 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
     private void inflatePopUpWindow(View v){
+
+        final int subtractFromTopPixels = 500;
+        final int popupMarginX = 0;
+        final int popupMarginY = 0;
         final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.popUpLayout);
         final View inflatedView = layoutInflater.inflate(R.layout.pop_up_comment, viewGroup, false);
+
+        //Add listener to our EditText to allow window to close after the "done" button is pressed
         userComment = (EditText) inflatedView.findViewById(R.id.commentEditText);
         userComment.setOnEditorActionListener(this);
 
-        //Get devize screen size
+        //Get device screen size and make a new point that corresponds to it
         Display display = getWindowManager().getDefaultDisplay();
-        final Point size = new Point();
-        display.getSize(size);
+        final Point screenSize = new Point();
+
+        //Assign screensize to our point
+        display.getSize(screenSize);
 
         //Set height depending on screen size
-        popupWindow = new PopupWindow(inflatedView, size.x, size.y - 600, true);
+        popupWindow = new PopupWindow(inflatedView, screenSize.x, screenSize.y - subtractFromTopPixels, true);
 
+        //Set background (Round edges), and make focusable (keyboard on window press)
         popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.pop_up_background));
         popupWindow.setFocusable(true);
         popupWindow.setOutsideTouchable(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            popupWindow.setElevation(8.0f);
-        }
+
+        //Set custom animation (found in values/styles.xml folder
+        popupWindow.setAnimationStyle(R.style.Animation);
 
         //Show the popup at bottom of screen with margin.
         //Params are (View parent, gravity, int x, int y);
-        popupWindow.showAtLocation(v, Gravity.BOTTOM, 0, 0);
+        popupWindow.showAtLocation(v, Gravity.BOTTOM, popupMarginX, popupMarginY);
     }
 
     private void saveUserLike(){
@@ -231,19 +240,22 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private void checkUserLike(){
         final boolean userHasLiked = preferences.getBoolean(markerID, DEFAULT_HAS_LIKED);
         if(userHasLiked){
+
+            //Change image to the filled-in heart image
             likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
             hasLiked = true;
         }
     }
 
 
-    public void setSimpleList(ListView listView){
+    public void setAndDisplayComments(ListView listView){
 
-        //Retrieve comments from database
+        //Retrieve comments from database and assign result to our ArrayList
         final String getCommentsUrl = GET_COMMENTS_ENDPOINT + markerID;
         MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler();
         ArrayList<String> commentList = commentsHandler.getComments(getCommentsUrl);
 
+        //set our adapter with our list of comments to the listView
         listView.setAdapter(new ArrayAdapter<>(MarkerDescriptionActivity.this,
                 R.layout.comment_item, R.id.commentTextView, commentList));
     }
@@ -251,6 +263,8 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public boolean onNavigateUp(){
+
+        //Destroy our activity and return to top of the activity stack
         finish();
         return true;
     }
@@ -258,13 +272,25 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if(actionId == EditorInfo.IME_ACTION_DONE){
+
+            //Create objects for our POST request
             MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler();
             final String postCommentUrl = POST_COMMENT_ENDPOINT + markerID;
+
+            //Convert our EditText input to a String
             final String comment = userComment.getText().toString();
+            Log.d("TAG......", comment);
+
+            //Post new comment to our database
             MarkerCommentParams commentParams = new MarkerCommentParams(comment, postCommentUrl);
             commentsHandler.postComment(commentParams);
 
+            //Close our popupWindow
             popupWindow.dismiss();
+
+            //Refresh our comment list
+            setAndDisplayComments(commentsListView);
+
             return true;
         }
         return false;
