@@ -176,13 +176,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             inflatePopUpWindow(v);
         }
         if(v == likeButton && !hasLiked) {
-            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_black_24dp));
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_heart_red));
             updateMarkerLikes(LIKED_STRING);
             saveUserLike();
             hasLiked = true;
         }
         else if(v == likeButton){
-            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_border_black_24dp));
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_heart_outline_grey));
             updateMarkerLikes(DISLIKED_STRING);
             saveUserDislike();
             hasLiked = false;
@@ -241,7 +241,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         if(userHasLiked){
 
             //Change image to the filled-in heart image
-            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_favorite_black_24dp));
+            likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_heart_red));
             hasLiked = true;
         }
     }
