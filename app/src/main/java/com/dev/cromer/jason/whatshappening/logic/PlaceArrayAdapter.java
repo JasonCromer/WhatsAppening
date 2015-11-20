@@ -64,7 +64,7 @@ public class PlaceArrayAdapter extends ArrayAdapter<PlaceArrayAdapter.PlaceAutoc
 
         if (mGoogleApiClient != null) {
 
-            //Query predictions with our contraint input
+            //Query predictions with our constraint input
             PendingResult<AutocompletePredictionBuffer> results =
                     Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, constraint.toString(),
                                     mBounds, mPlaceFilter);
@@ -120,6 +120,7 @@ public class PlaceArrayAdapter extends ArrayAdapter<PlaceArrayAdapter.PlaceAutoc
                         results.count = mResultList.size();
                     }
                 }
+
                 return results;
             }
 
