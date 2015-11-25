@@ -15,7 +15,7 @@ import com.dev.cromer.jason.whatshappening.R;
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String[] requestPerms = {Manifest.permission.ACCESS_FINE_LOCATION};
-    private static final int LOCATION_REQUEST_CODE = 1440;
+    private static final int LOCATION_REQUEST_CODE = 100;
     private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
 
     @Override

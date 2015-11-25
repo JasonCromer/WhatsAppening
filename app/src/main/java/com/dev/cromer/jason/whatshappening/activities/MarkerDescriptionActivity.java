@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
+import com.dev.cromer.jason.whatshappening.networking.VolleyGetRequest;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
@@ -58,7 +59,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     static PopupWindow popupWindow;
 
     //constants
-    private static final int DEFAULT_LIKES = 0;
+    private static final String DEFAULT_LIKES = "0";
     private static final boolean DEFAULT_HAS_LIKED = false;
     private static final String LIKED_STRING = "like";
     private static final String DISLIKED_STRING = "dislike";
@@ -100,7 +101,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //Set marker markerDescription and likes in their textviews
         displayMarkerDescription();
-        displayMarkerLikes();
 
         //Display our comments
         setAndDisplayComments(commentsListView);
@@ -132,20 +132,28 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
-    private void getMarkerLikes(){
+    private void getMarkerLikes() {
+        //This endpoint points to the markerLikes of the specific post
         final String url = GET_LIKES_ENDPOINT + markerID;
-        HttpGetRequest httpGetRequest = new HttpGetRequest();
 
-        try{
-            markerLikes = httpGetRequest.execute(url).get();
-        }
-        catch(ExecutionException | InterruptedException | NullPointerException e){
-            e.printStackTrace();
-        }
+        //Make our get request and set our markerLikes global variable to the response
+        VolleyGetRequest getRequest = new VolleyGetRequest(getApplicationContext(), url);
+
+        getRequest.makeRequest(new VolleyGetRequest.VolleyCallback() {
+            @Override
+            public void onSuccess(String result) {
+
+                //Get marker likes and display them
+                markerLikes = result;
+                displayMarkerLikes();
+            }
+        });
     }
 
 
+
     private void displayMarkerLikes(){
+        Log.d("IN displayMarkerLikes: ", markerLikes);
         if(markerLikes != null){
             markerLikesTextView.setText(markerLikes);
         }
@@ -173,7 +181,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //Get and display likes after submitting like/dislike
         getMarkerLikes();
-        displayMarkerLikes();
     }
 
 

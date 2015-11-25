@@ -467,7 +467,9 @@ public class MapActivity extends AppCompatActivity implements LocationListener,
         switch (requestCode){
             case(POST_NEW_MARKER_REQ_CODE):
                 //remove temporary marker because a new one will be placed with the title
-                temporaryPlacedMarker.remove();
+                if(temporaryPlacedMarker != null){
+                    temporaryPlacedMarker.remove();
+                }
 
                 if(resultCode == Activity.RESULT_OK){
                     //Get title inputted by user in previous activity
