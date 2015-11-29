@@ -7,6 +7,7 @@ public class MarkerCommentParams {
     String url;
 
     public MarkerCommentParams(String comment, String url){
+        //Replace commas to avoid false splitting in GET response
         this.commentString = comment;
         this.url = url;
     }

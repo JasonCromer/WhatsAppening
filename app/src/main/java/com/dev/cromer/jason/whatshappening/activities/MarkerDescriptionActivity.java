@@ -44,6 +44,8 @@ import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
                                 EditText.OnEditorActionListener, AbsListView.OnScrollListener, View.OnFocusChangeListener, RequestQueue.RequestFinishedListener<Object> {
@@ -130,7 +132,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d("TAG result:", response);
                 markerDescription = response;
                 markerDescription = markerDescription.replace("\"", "");
 
@@ -149,7 +150,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
 
     private void displayMarkerDescription(){
-        Log.d("TAG in display Method:", markerDescription);
         if(markerDescription != null){
             markerDescriptionTextView.setText(markerDescription);
         }
@@ -299,16 +299,48 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
-    public void setAndDisplayComments(ListView listView){
+    public void setAndDisplayComments(final ListView listView){
 
         //Retrieve comments from database and assign result to our ArrayList
-        final String getCommentsUrl = GET_COMMENTS_ENDPOINT + markerID;
-        MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler();
-        ArrayList<String> commentList = commentsHandler.getComments(getCommentsUrl);
+        final String url = GET_COMMENTS_ENDPOINT + markerID;
 
-        //set our adapter with our list of comments to the listView
-        listView.setAdapter(new ArrayAdapter<>(MarkerDescriptionActivity.this,
-                R.layout.comment_item, R.id.commentTextView, commentList));
+        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                String commentsAsString = response;
+                Log.d("onRESPONSE", response);
+
+                if(commentsAsString != null){
+
+                    //We remove the brackets and quotations
+                    commentsAsString = commentsAsString.replace("[", "");
+                    commentsAsString = commentsAsString.replace("]", "");
+                    commentsAsString = commentsAsString.replace("\"", "");
+
+                    //Remove any additional white space with the regex \\s*
+                    List<String> commentsList = Arrays.asList(commentsAsString.split("\\s*, \\s*"));
+
+                    for(int i = 0; i < commentsList.size(); i++){
+                        if(commentsList.get(i).contains("~")){
+                            commentsList.set(i, commentsList.get(i).replace("~", ","));
+                        }
+                    }
+
+                    //set our adapter with our list of comments to the listView
+                    listView.setAdapter(new ArrayAdapter<>(MarkerDescriptionActivity.this,
+                            R.layout.comment_item, R.id.commentTextView, commentsList));
+
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                displayErrorMessage(error);
+            }
+        });
+
+        queue.add(request);
     }
 
 
@@ -333,11 +365,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if(actionId == EditorInfo.IME_ACTION_DONE){
             //Create objects for our POST request
-            MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler();
+            MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler(getApplicationContext(), queue);
             final String postCommentUrl = POST_COMMENT_ENDPOINT + markerID;
 
             //Convert our EditText input to a String
-            final String comment = userComment.getText().toString();
+            //Replace comma with tilde for GET response processing later
+            final String comment = userComment.getText().toString().replaceAll(",","~");
 
             //Post new comment to our database
             MarkerCommentParams commentParams = new MarkerCommentParams(comment, postCommentUrl);
