@@ -38,7 +38,6 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     /*
         Constructor
         @param Context
-        @param String
      */
     public VolleyGetRequest(Context appContext){
         this.applicationContext = appContext;
@@ -66,6 +65,7 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
 
     @Override
     public void onErrorResponse(VolleyError error){
+
         //Convert error to NetworkResponse to get details
         NetworkResponse errorResponse = error.networkResponse;
         String errorResponseString = "Sorry, we ran into some network issues";
