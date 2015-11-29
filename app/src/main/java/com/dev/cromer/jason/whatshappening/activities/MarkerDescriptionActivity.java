@@ -35,15 +35,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.dev.cromer.jason.whatshappening.R;
-import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
+import com.dev.cromer.jason.whatshappening.networking.NewCommentHttpRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -364,17 +363,22 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if(actionId == EditorInfo.IME_ACTION_DONE){
-            //Create objects for our POST request
-            MarkerCommentsHandler commentsHandler = new MarkerCommentsHandler(getApplicationContext(), queue);
             final String postCommentUrl = POST_COMMENT_ENDPOINT + markerID;
 
             //Convert our EditText input to a String
             //Replace comma with tilde for GET response processing later
             final String comment = userComment.getText().toString().replaceAll(",","~");
 
-            //Post new comment to our database
+            //Create comment object to hold data
             MarkerCommentParams commentParams = new MarkerCommentParams(comment, postCommentUrl);
-            commentsHandler.postComment(commentParams);
+
+            if(!commentParams.getCommentString().isEmpty()){
+                //Create objects for our POST request
+                NewCommentHttpRequest commentHttpRequest = new NewCommentHttpRequest();
+
+                //Execute the POST request
+                commentHttpRequest.execute(commentParams);
+            }
 
             //Close our popupWindow
             popupWindow.dismiss();
