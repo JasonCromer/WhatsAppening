@@ -6,11 +6,9 @@ import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 
 import org.json.JSONException;
@@ -22,8 +20,6 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
     //Application Context to persist RequestQueue and perform Toast messages
     private Context applicationContext;
 
-    //RequestQueue object to add our requests to
-    private RequestQueue requestQueue;
 
     //A TAG for our String request object
     private static final String STRING_REQUEST_TAG = "PostRequest";
@@ -40,11 +36,6 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
 
     public VolleyPostRequest(Context appContext){
         this.applicationContext = appContext;
-    }
-
-    public VolleyPostRequest(Context appContext, MarkerLikesPostRequestParams markerLikesObjectParams){
-        this.applicationContext = appContext;
-        this.markerLikesObject = markerLikesObjectParams;
         isMarkerUpdate = true;
     }
 
@@ -66,16 +57,12 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
     }
 
 
-    public void updateLikes(){
-
-        //Create a request queue for our POST requests
-        requestQueue = Volley.newRequestQueue(applicationContext);
-
+    public JsonObjectRequest getRequestObject(MarkerLikesPostRequestParams params){
+        markerLikesObject = params;
         //Create our request object (Json object)
         createRequestObject();
 
-        //Add our json object to the request queue
-        requestQueue.add(jsonRequest);
+        return jsonRequest;
     }
 
     private void createRequestObject(){
@@ -100,12 +87,8 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
         //If we've supplied a non-null url, create the jsonRequest object
         if(url != null) {
             jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObj, this, this);
+            jsonRequest.setTag(STRING_REQUEST_TAG);
         }
     }
 
-    public void destroyRequestQueue(){
-        if(requestQueue != null){
-            requestQueue.cancelAll(STRING_REQUEST_TAG);
-        }
-    }
 }

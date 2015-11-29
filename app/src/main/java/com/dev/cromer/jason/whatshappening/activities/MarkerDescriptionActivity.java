@@ -25,11 +25,16 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
 import com.dev.cromer.jason.whatshappening.networking.VolleyGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
+import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
@@ -39,7 +44,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
-                                EditText.OnEditorActionListener, AbsListView.OnScrollListener, View.OnFocusChangeListener {
+                                EditText.OnEditorActionListener, AbsListView.OnScrollListener, View.OnFocusChangeListener, RequestQueue.RequestFinishedListener<Object> {
 
     private TextView markerDescriptionTextView;
     private TextView markerLikesTextView;
@@ -56,6 +61,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private EditText userComment;
     private VolleyGetRequest volleyGetRequest;
     private VolleyPostRequest volleyPostRequest;
+    private RequestQueue queue;
     static PopupWindow popupWindow;
 
     //constants
@@ -110,8 +116,15 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
 
     private void instantiateVolleyRequestObjects(){
+        //Start our volley request queue to persists in application lifetime
+        queue = VolleyQueueSingleton.getInstance(this.getApplicationContext()).
+                getRequestQueue();
+
+        queue.addRequestFinishedListener(this);
+
         //Make our get request and set our markerLikes global variable to the response
         volleyGetRequest = new VolleyGetRequest(getApplicationContext());
+        volleyPostRequest = new VolleyPostRequest(getApplicationContext());
     }
 
 
@@ -145,7 +158,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //This endpoint points to the markerLikes of the specific post
         final String url = GET_LIKES_ENDPOINT + markerID;
 
-        volleyGetRequest.makeRequest(new VolleyGetRequest.VolleyCallback() {
+        StringRequest request = volleyGetRequest.getRequestObject(new VolleyGetRequest.VolleyCallback() {
             @Override
             public void onSuccess(String result) {
 
@@ -154,6 +167,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                 displayMarkerLikes();
             }
         }, url);
+
+        //Add our request to the queue
+        queue.add(request);
     }
 
 
@@ -175,18 +191,10 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private void updateMarkerLikes(String likeType){
         final String url = UPDATE_LIKES_ENDPOINT + markerID;
         MarkerLikesPostRequestParams params = new MarkerLikesPostRequestParams(url, likeType);
+        JsonObjectRequest request = volleyPostRequest.getRequestObject(params);
 
-        volleyPostRequest = new VolleyPostRequest(getApplicationContext(), params);
-        volleyPostRequest.updateLikes();
-
-        //Refresh our view with new likes
-        //Temporary solution to use handler for delaying response times
-        markerLikesTextView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                getMarkerLikes();
-            }
-        }, 500);
+        //Add our request to the queue
+        queue.add(request);
     }
 
 
@@ -291,12 +299,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         super.onStop();
 
         //Destroy all items in our Volley request queue to prevent any crashes from View changes
-        if(volleyGetRequest != null){
-            volleyGetRequest.destroyRequestQueue();
-        }
-        if(volleyPostRequest != null){
-            volleyPostRequest.destroyRequestQueue();
-        }
+        VolleyQueueSingleton.getInstance(this).destroyRequestQueue();
     }
 
 
@@ -379,6 +382,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         if(!hasFocus){
             //Show our floating action button (even though it won't be seen until keyboard hides)
             floatingActionButton.show();
+        }
+    }
+
+    @Override
+    public void onRequestFinished(Request<Object> request) {
+        if(request.getTag() == "PostRequest"){
+            getMarkerLikes();
         }
     }
 }

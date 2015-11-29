@@ -6,11 +6,9 @@ import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
 /**
  * This class performs a simple GET request, and uses a callback interface, named VolleyCallback
@@ -24,9 +22,6 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
 
     //String request object
     private StringRequest stringRequest;
-
-    //RequestQueue object to add our requests to
-    private RequestQueue requestQueue;
 
     //Our interface callback Object
     private VolleyCallback callback;
@@ -48,18 +43,15 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     private void createStringRequestObject(String url){
         stringRequest = new StringRequest(Request.Method.GET, url, this, this);
         stringRequest.setTag(STRING_REQUEST_TAG);
-        requestQueue = Volley.newRequestQueue(applicationContext);
     }
 
 
     //This method makes the actual http request by queueing the string request
-    public void makeRequest(VolleyCallback callback, String url){
+    public StringRequest getRequestObject(VolleyCallback callback, String url){
         this.callback = callback;
         createStringRequestObject(url);
 
-        if(stringRequest != null){
-            requestQueue.add(stringRequest);
-        }
+        return stringRequest;
     }
 
 
@@ -86,14 +78,6 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     //An interface for calling the onSuccess method
     public interface VolleyCallback{
         void onSuccess(String result);
-    }
-
-
-    //This method stops any of the requests in queue (typically called in onStop())
-    public void destroyRequestQueue(){
-        if(requestQueue != null){
-            requestQueue.cancelAll(STRING_REQUEST_TAG);
-        }
     }
 
 }
