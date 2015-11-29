@@ -36,16 +36,25 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     private VolleyCallback callback;
 
 
+    /*
+        Constructor
+        @param Context
+        @param String
+     */
     public VolleyGetRequest(Context appContext, String url){
         this.applicationContext = appContext;
         this.stringURL = url;
     }
 
+
+    //This method creates the request string, and the request queue
     private void createStringRequestObject(){
         stringRequest = new StringRequest(Request.Method.GET, stringURL, this, this);
         requestQueue = Volley.newRequestQueue(applicationContext);
     }
 
+
+    //This method makes the actual http request by queueing the string request
     public void makeRequest(VolleyCallback callback){
         this.callback = callback;
         createStringRequestObject();
@@ -67,12 +76,15 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
         }
     }
 
+
     @Override
     public void onResponse(String response){
-        //Make sure our response is an integer greater or equal to 0
+        //callback to receive response in a class that implements VolleyCallback
         callback.onSuccess(response);
     }
 
+
+    //An interface for calling the onSuccess method
     public interface VolleyCallback{
         void onSuccess(String result);
     }
