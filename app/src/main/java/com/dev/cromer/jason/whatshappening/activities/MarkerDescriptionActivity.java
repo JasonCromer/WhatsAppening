@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -24,24 +25,25 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
-import com.dev.cromer.jason.whatshappening.networking.VolleyGetRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
-import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
 import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
                                 EditText.OnEditorActionListener, AbsListView.OnScrollListener, View.OnFocusChangeListener, RequestQueue.RequestFinishedListener<Object> {
@@ -59,7 +61,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private FloatingActionButton floatingActionButton;
     private LayoutInflater layoutInflater;
     private EditText userComment;
-    private VolleyGetRequest volleyGetRequest;
     private VolleyPostRequest volleyPostRequest;
     private RequestQueue queue;
     static PopupWindow popupWindow;
@@ -107,9 +108,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         getMarkerDescription();
         getMarkerLikes();
 
-        //Set marker markerDescription and likes in their textviews
-        displayMarkerDescription();
-
         //Display our comments
         setAndDisplayComments(commentsListView);
     }
@@ -122,29 +120,36 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         queue.addRequestFinishedListener(this);
 
-        //Make our get request and set our markerLikes global variable to the response
-        volleyGetRequest = new VolleyGetRequest(getApplicationContext());
         volleyPostRequest = new VolleyPostRequest(getApplicationContext());
     }
 
 
     private void getMarkerDescription(){
         final String url = GET_DESCRIPTION_ENDPOINT + markerID;
-        HttpGetRequest httpGetRequest = new HttpGetRequest();
 
-        try{
-            markerDescription = httpGetRequest.execute(url).get();
+        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d("TAG result:", response);
+                markerDescription = response;
+                markerDescription = markerDescription.replace("\"", "");
 
-            //Remove quotations from markerDescription
-            markerDescription = markerDescription.replace("\"", "");
-        }
-        catch(ExecutionException | InterruptedException | NullPointerException e){
-            e.printStackTrace();
-        }
+                //Set marker markerDescription and likes in their textviews
+                displayMarkerDescription();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                displayErrorMessage(error);
+            }
+        });
+
+        queue.add(request);
     }
 
 
     private void displayMarkerDescription(){
+        Log.d("TAG in display Method:", markerDescription);
         if(markerDescription != null){
             markerDescriptionTextView.setText(markerDescription);
         }
@@ -158,18 +163,32 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //This endpoint points to the markerLikes of the specific post
         final String url = GET_LIKES_ENDPOINT + markerID;
 
-        StringRequest request = volleyGetRequest.getRequestObject(new VolleyGetRequest.VolleyCallback() {
+        StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
-            public void onSuccess(String result) {
-
-                //Get marker likes and display them
-                markerLikes = result;
+            public void onResponse(String response) {
+                markerLikes = response;
                 displayMarkerLikes();
             }
-        }, url);
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                displayErrorMessage(error);
+            }
+        });
 
         //Add our request to the queue
         queue.add(request);
+    }
+
+
+    private void displayErrorMessage(VolleyError error){
+        //Convert error to NetworkResponse to get details
+        NetworkResponse errorResponse = error.networkResponse;
+        String errorResponseString = "Sorry, we ran into some network issues";
+
+        if(errorResponse != null && errorResponse.data != null){
+            Toast.makeText(getApplicationContext(), errorResponseString, Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -388,6 +407,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public void onRequestFinished(Request<Object> request) {
         if(request.getTag() == "PostRequest"){
+            //Update our likes due to post-request delay
             getMarkerLikes();
         }
     }
