@@ -104,6 +104,8 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
     }
 
     public void destroyRequestQueue(){
-        requestQueue.cancelAll(STRING_REQUEST_TAG);
+        if(requestQueue != null){
+            requestQueue.cancelAll(STRING_REQUEST_TAG);
+        }
     }
 }

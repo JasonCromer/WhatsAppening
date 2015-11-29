@@ -90,7 +90,7 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
 
 
     //This method stops any of the requests in queue (typically called in onStop())
-    public void cancelVolleyRequests(){
+    public void destroyRequestQueue(){
         if(requestQueue != null){
             requestQueue.cancelAll(STRING_REQUEST_TAG);
         }

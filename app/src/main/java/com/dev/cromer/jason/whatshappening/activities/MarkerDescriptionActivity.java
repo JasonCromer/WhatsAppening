@@ -24,16 +24,15 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.MarkerCommentsHandler;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
 import com.dev.cromer.jason.whatshappening.networking.VolleyGetRequest;
+import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
-import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.dev.cromer.jason.whatshappening.networking.HttpGetRequest;
-import com.dev.cromer.jason.whatshappening.networking.UpdateMarkerLikesHttpPostRequest;
+import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -56,6 +55,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private LayoutInflater layoutInflater;
     private EditText userComment;
     private VolleyGetRequest volleyGetRequest;
+    private VolleyPostRequest volleyPostRequest;
     static PopupWindow popupWindow;
 
     //constants
@@ -160,32 +160,33 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     private void displayMarkerLikes(){
         if(markerLikes != null){
+            //Set and invalidate our views
             markerLikesTextView.setText(markerLikes);
+            markerLikesTextView.invalidate();
         }
         else{
+            //Set and invalidate our views
             markerLikesTextView.setText(DEFAULT_LIKES);
+            markerLikesTextView.invalidate();
         }
     }
 
 
     private void updateMarkerLikes(String likeType){
         final String url = UPDATE_LIKES_ENDPOINT + markerID;
-
-        //Create an object containing necessary parameters for our post request
         MarkerLikesPostRequestParams params = new MarkerLikesPostRequestParams(url, likeType);
 
-        UpdateMarkerLikesHttpPostRequest postRequest = new UpdateMarkerLikesHttpPostRequest();
+        volleyPostRequest = new VolleyPostRequest(getApplicationContext(), params);
+        volleyPostRequest.updateLikes();
 
-        try{
-            postRequest.execute(params).get();
-        }
-        catch (ExecutionException | InterruptedException | NullPointerException e){
-            Toast.makeText(getApplicationContext(), "Cannot contact our server! Check your connection.", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-
-        //Get and display likes after submitting like/dislike
-        getMarkerLikes();
+        //Refresh our view with new likes
+        //Temporary solution to use handler for delaying response times
+        markerLikesTextView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getMarkerLikes();
+            }
+        }, 500);
     }
 
 
@@ -290,7 +291,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         super.onStop();
 
         //Destroy all items in our Volley request queue to prevent any crashes from View changes
-        volleyGetRequest.cancelVolleyRequests();
+        if(volleyGetRequest != null){
+            volleyGetRequest.destroyRequestQueue();
+        }
+        if(volleyPostRequest != null){
+            volleyPostRequest.destroyRequestQueue();
+        }
     }
 
 
