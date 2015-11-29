@@ -2,7 +2,6 @@ package com.dev.cromer.jason.whatshappening.networking;
 
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
@@ -14,17 +13,14 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 /**
- * This class is a test to determine performance optimizations, clearer implementation, and
- * better management to respond to activity lifecycle changes.
+ * This class performs a simple GET request, and uses a callback interface, named VolleyCallback
+ * to have the implementing class receive the response from the server.
  **/
 
 public class VolleyGetRequest implements Response.Listener<String>, Response.ErrorListener {
 
     //Application Context to persist RequestQueue and perform Toast messages
     private Context applicationContext;
-
-    //URL for requests
-    private String stringURL;
 
     //String request object
     private StringRequest stringRequest;
@@ -35,29 +31,32 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     //Our interface callback Object
     private VolleyCallback callback;
 
+    //A TAG for our String request object
+    private static final String STRING_REQUEST_TAG = "GetRequest";
+
 
     /*
         Constructor
         @param Context
         @param String
      */
-    public VolleyGetRequest(Context appContext, String url){
+    public VolleyGetRequest(Context appContext){
         this.applicationContext = appContext;
-        this.stringURL = url;
     }
 
 
     //This method creates the request string, and the request queue
-    private void createStringRequestObject(){
-        stringRequest = new StringRequest(Request.Method.GET, stringURL, this, this);
+    private void createStringRequestObject(String url){
+        stringRequest = new StringRequest(Request.Method.GET, url, this, this);
+        stringRequest.setTag(STRING_REQUEST_TAG);
         requestQueue = Volley.newRequestQueue(applicationContext);
     }
 
 
     //This method makes the actual http request by queueing the string request
-    public void makeRequest(VolleyCallback callback){
+    public void makeRequest(VolleyCallback callback, String url){
         this.callback = callback;
-        createStringRequestObject();
+        createStringRequestObject(url);
 
         if(stringRequest != null){
             requestQueue.add(stringRequest);
@@ -88,4 +87,13 @@ public class VolleyGetRequest implements Response.Listener<String>, Response.Err
     public interface VolleyCallback{
         void onSuccess(String result);
     }
+
+
+    //This method stops any of the requests in queue (typically called in onStop())
+    public void cancelVolleyRequests(){
+        if(requestQueue != null){
+            requestQueue.cancelAll(STRING_REQUEST_TAG);
+        }
+    }
+
 }

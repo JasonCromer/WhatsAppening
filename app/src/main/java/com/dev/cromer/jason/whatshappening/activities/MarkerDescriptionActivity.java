@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -41,7 +40,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
-                                EditText.OnEditorActionListener, AbsListView.OnScrollListener {
+                                EditText.OnEditorActionListener, AbsListView.OnScrollListener, View.OnFocusChangeListener {
 
     private TextView markerDescriptionTextView;
     private TextView markerLikesTextView;
@@ -56,6 +55,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private FloatingActionButton floatingActionButton;
     private LayoutInflater layoutInflater;
     private EditText userComment;
+    private VolleyGetRequest volleyGetRequest;
     static PopupWindow popupWindow;
 
     //constants
@@ -85,11 +85,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         floatingActionButton.setOnClickListener(this);
         commentsListView.setOnScrollListener(this);
 
+        //Instantiate our volley objects for http requests
+        instantiateVolleyRequestObjects();
+
         //Get the ID and position from the marker thats been clicked on, on the map
         markerID = getIntent().getStringExtra("MARKER_ID");
         Bundle bundle = getIntent().getParcelableExtra("MARKER_LOCATION");
         markerPosition = bundle.getParcelable("LATLNG");
-        Log.d("MARKER_LOCATION: ", String.valueOf(markerPosition));
 
         //Get the shared preference to see if user has liked or disliked the post
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -105,6 +107,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Display our comments
         setAndDisplayComments(commentsListView);
     }
+
+
+    private void instantiateVolleyRequestObjects(){
+        //Make our get request and set our markerLikes global variable to the response
+        volleyGetRequest = new VolleyGetRequest(getApplicationContext());
+    }
+
 
     private void getMarkerDescription(){
         final String url = GET_DESCRIPTION_ENDPOINT + markerID;
@@ -136,10 +145,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //This endpoint points to the markerLikes of the specific post
         final String url = GET_LIKES_ENDPOINT + markerID;
 
-        //Make our get request and set our markerLikes global variable to the response
-        VolleyGetRequest getRequest = new VolleyGetRequest(getApplicationContext(), url);
-
-        getRequest.makeRequest(new VolleyGetRequest.VolleyCallback() {
+        volleyGetRequest.makeRequest(new VolleyGetRequest.VolleyCallback() {
             @Override
             public void onSuccess(String result) {
 
@@ -147,13 +153,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                 markerLikes = result;
                 displayMarkerLikes();
             }
-        });
+        }, url);
     }
 
 
 
     private void displayMarkerLikes(){
-        Log.d("IN displayMarkerLikes: ", markerLikes);
         if(markerLikes != null){
             markerLikesTextView.setText(markerLikes);
         }
@@ -206,15 +211,18 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     private void inflatePopUpWindow(View v){
 
-        final int subtractFromTopPixels = 500;
         final int popupMarginX = 0;
         final int popupMarginY = 0;
         final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.popUpLayout);
         final View inflatedView = layoutInflater.inflate(R.layout.pop_up_comment, viewGroup, false);
 
+        //Hide the floating action button
+        floatingActionButton.hide();
+
         //Add listener to our EditText to allow window to close after the "done" button is pressed
         userComment = (EditText) inflatedView.findViewById(R.id.commentEditText);
         userComment.setOnEditorActionListener(this);
+        userComment.setOnFocusChangeListener(this);
 
         //Get device screen size and make a new point that corresponds to it
         Display display = getWindowManager().getDefaultDisplay();
@@ -224,7 +232,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         display.getSize(screenSize);
 
         //Set height depending on screen size
-        popupWindow = new PopupWindow(inflatedView, screenSize.x, screenSize.y - subtractFromTopPixels, true);
+        popupWindow = new PopupWindow(inflatedView, screenSize.x, v.getMeasuredHeight(), true);
 
         //Set background (Round edges), and make focusable (keyboard on window press)
         popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.pop_up_background));
@@ -238,7 +246,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Show the popup at bottom of screen with margin.
         //Params are (View parent, gravity, int x, int y);
         popupWindow.showAtLocation(v, Gravity.BOTTOM, popupMarginX, popupMarginY);
-
     }
 
     private void saveUserLike(){
@@ -276,9 +283,19 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                 R.layout.comment_item, R.id.commentTextView, commentList));
     }
 
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        //Destroy all items in our Volley request queue to prevent any crashes from View changes
+        volleyGetRequest.cancelVolleyRequests();
+    }
+
+
     @Override
     public boolean onNavigateUp(){
-
         //Destroy our activity and return to top of the activity stack
         finish();
         return true;
@@ -351,4 +368,11 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus){
+            //Show our floating action button (even though it won't be seen until keyboard hides)
+            floatingActionButton.show();
+        }
+    }
 }
