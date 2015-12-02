@@ -40,10 +40,10 @@ import com.dev.cromer.jason.whatshappening.networking.NewCommentHttpRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
 import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
-import com.dev.cromer.jason.whatshappening.objects.MarkerLikesPostRequestParams;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class MarkerDescriptionActivity extends AppCompatActivity implements View.OnClickListener,
@@ -68,6 +68,8 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     //constants
     private static final String DEFAULT_LIKES = "0";
+    private static final String UPDATE_LIKES_TAG = "UPDATE_LIKES";
+    private static final String UPDATE_COMMENTS_TAG = "UPDATE_COMMENTS";
     private static final boolean DEFAULT_HAS_LIKED = false;
     private static final String LIKED_STRING = "like";
     private static final String DISLIKED_STRING = "dislike";
@@ -82,16 +84,8 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marker_description);
 
-        markerLikesTextView = (TextView) findViewById(R.id.markerLikesTextView);
-        markerDescriptionTextView = (TextView) findViewById(R.id.markerDescriptionTextView);
-        likeButton = (ImageButton) findViewById(R.id.likeButton);
-        commentsListView = (ListView) findViewById(R.id.commentsListView);
-        floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
-        layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        likeButton.setOnClickListener(this);
-        floatingActionButton.setOnClickListener(this);
-        commentsListView.setOnScrollListener(this);
+        //Instantiate our view objects
+        instantiateViewObjects();
 
         //Instantiate our volley objects for http requests
         instantiateVolleyRequestObjects();
@@ -111,6 +105,20 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //Display our comments
         setAndDisplayComments(commentsListView);
+    }
+
+
+    private void instantiateViewObjects(){
+        markerLikesTextView = (TextView) findViewById(R.id.markerLikesTextView);
+        markerDescriptionTextView = (TextView) findViewById(R.id.markerDescriptionTextView);
+        likeButton = (ImageButton) findViewById(R.id.likeButton);
+        commentsListView = (ListView) findViewById(R.id.commentsListView);
+        floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        likeButton.setOnClickListener(this);
+        floatingActionButton.setOnClickListener(this);
+        commentsListView.setOnScrollListener(this);
     }
 
 
@@ -148,6 +156,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
+    //Display
     private void displayMarkerDescription(){
         if(markerDescription != null){
             markerDescriptionTextView.setText(markerDescription);
@@ -194,24 +203,30 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     private void displayMarkerLikes(){
         if(markerLikes != null){
-            //Set and invalidate our views
+            //Set our view
             markerLikesTextView.setText(markerLikes);
-            markerLikesTextView.invalidate();
         }
         else{
-            //Set and invalidate our views
+            //Set our view
             markerLikesTextView.setText(DEFAULT_LIKES);
-            markerLikesTextView.invalidate();
         }
     }
 
 
     private void updateMarkerLikes(String likeType){
         final String url = UPDATE_LIKES_ENDPOINT + markerID;
-        MarkerLikesPostRequestParams params = new MarkerLikesPostRequestParams(url, likeType);
-        JsonObjectRequest request = volleyPostRequest.getRequestObject(params);
 
-        //Add our request to the queue
+        //Create parameter HashMap to hold likeType key and the data (likes)
+        HashMap<String, String> paramsMap = new HashMap<>();
+        paramsMap.put("likeType", likeType);
+
+        //Create Json request object using our params
+        JsonObjectRequest request = volleyPostRequest.getRequestObject(url, paramsMap);
+
+        //Set our tag to identify this Post request
+        request.setTag(UPDATE_LIKES_TAG);
+
+        //Add our request object to the Singleton Volley queue
         queue.add(request);
     }
 
@@ -319,6 +334,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                     //Remove any additional white space with the regex \\s*
                     List<String> commentsList = Arrays.asList(commentsAsString.split("\\s*, \\s*"));
 
+                    //We replaced comma's with tilde's in the POST request, and now we reverse it
                     for(int i = 0; i < commentsList.size(); i++){
                         if(commentsList.get(i).contains("~")){
                             commentsList.set(i, commentsList.get(i).replace("~", ","));
@@ -362,29 +378,28 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        if(actionId == EditorInfo.IME_ACTION_DONE){
-            final String postCommentUrl = POST_COMMENT_ENDPOINT + markerID;
+        if(actionId == EditorInfo.IME_ACTION_DONE && !userComment.getText().toString().isEmpty()){
+            final String url = POST_COMMENT_ENDPOINT + markerID;
 
             //Convert our EditText input to a String
             //Replace comma with tilde for GET response processing later
             final String comment = userComment.getText().toString().replaceAll(",","~");
 
-            //Create comment object to hold data
-            MarkerCommentParams commentParams = new MarkerCommentParams(comment, postCommentUrl);
+            //Create comment HashMap to hold data
+            HashMap<String, String> paramsMap = new HashMap<>();
+            paramsMap.put("comment", comment);
 
-            if(!commentParams.getCommentString().isEmpty()){
-                //Create objects for our POST request
-                NewCommentHttpRequest commentHttpRequest = new NewCommentHttpRequest();
+            //Create a new request object using our hashmap and url
+            JsonObjectRequest request = volleyPostRequest.getRequestObject(url, paramsMap);
 
-                //Execute the POST request
-                commentHttpRequest.execute(commentParams);
-            }
+            //Tag our request for post-processing
+            request.setTag(UPDATE_COMMENTS_TAG);
+
+            //Add our request object to the Singleton Volley queue
+            queue.add(request);
 
             //Close our popupWindow
             popupWindow.dismiss();
-
-            //Refresh our comment list
-            setAndDisplayComments(commentsListView);
 
             return true;
         }
@@ -443,9 +458,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public void onRequestFinished(Request<Object> request) {
-        if(request.getTag() == "PostRequest"){
-            //Update our likes due to post-request delay
+        if(request.getTag() == UPDATE_LIKES_TAG){
+            //Update our likes here to ensure post has finished
             getMarkerLikes();
+        }
+        if(request.getTag() == UPDATE_COMMENTS_TAG){
+            //Update our comments list to refresh newly added comments
+            setAndDisplayComments(commentsListView);
         }
     }
 }

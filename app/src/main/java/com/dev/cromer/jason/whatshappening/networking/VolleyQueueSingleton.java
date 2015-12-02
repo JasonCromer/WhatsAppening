@@ -41,9 +41,11 @@ public class VolleyQueueSingleton {
 
 
     //Generic method to add object to our request queue
+    /*
     public <T> void addToRequestQueue(Request<T> request){
         getRequestQueue().add(request);
     }
+    */
 
     //This method stops any of the requests in queue (typically called in onStop())
     public void destroyRequestQueue(){
