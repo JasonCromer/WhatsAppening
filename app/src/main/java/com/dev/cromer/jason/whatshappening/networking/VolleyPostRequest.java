@@ -22,6 +22,8 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
     //Application Context to persist RequestQueue and perform Toast messages
     private Context applicationContext;
 
+
+    //Constructor
     public VolleyPostRequest(Context appContext){
         this.applicationContext = appContext;
     }
@@ -29,7 +31,6 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
 
     @Override
     public void onErrorResponse(VolleyError error) {
-
         //Convert our error to a NetworkResponse to get more details
         NetworkResponse errorResponse = error.networkResponse;
         String errorResponseString = "Sorry, we ran into some network issues";
@@ -64,6 +65,7 @@ public class VolleyPostRequest implements Response.Listener<JSONObject>, Respons
         if(url != null) {
             jsonRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObj, this, this);
         }
+        //Otherwise, return an empty jsonRequest object
         else{
             jsonRequest = new JsonObjectRequest(Request.Method.POST, "", jsonObj, this, this);
         }

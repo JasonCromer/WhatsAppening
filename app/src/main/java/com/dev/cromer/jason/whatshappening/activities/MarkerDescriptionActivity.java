@@ -36,10 +36,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.dev.cromer.jason.whatshappening.R;
 import com.dev.cromer.jason.whatshappening.logic.ShareMarkerHandler;
-import com.dev.cromer.jason.whatshappening.networking.NewCommentHttpRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
-import com.dev.cromer.jason.whatshappening.objects.MarkerCommentParams;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Arrays;
@@ -54,7 +52,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private ImageButton likeButton;
     private String markerDescription = "";
     private String markerLikes = "";
-    static ListView commentsListView;
+    private ListView commentsListView;
     private String markerID;
     private LatLng markerPosition;
     private boolean hasLiked = false;
@@ -64,7 +62,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private EditText userComment;
     private VolleyPostRequest volleyPostRequest;
     private RequestQueue queue;
-    static PopupWindow popupWindow;
+    private PopupWindow popupWindow;
 
     //constants
     private static final String DEFAULT_LIKES = "0";
@@ -104,7 +102,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         getMarkerLikes();
 
         //Display our comments
-        setAndDisplayComments(commentsListView);
+        getAndDisplayComments(commentsListView);
     }
 
 
@@ -313,7 +311,32 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
-    public void setAndDisplayComments(final ListView listView){
+    private void postNewComment(){
+        final String url = POST_COMMENT_ENDPOINT + markerID;
+
+        //Convert our EditText input to a String
+        //Replace comma with tilde for GET response processing later
+        final String comment = userComment.getText().toString().replaceAll(",","~");
+
+        //Create comment HashMap to hold data
+        HashMap<String, String> paramsMap = new HashMap<>();
+        paramsMap.put("comment", comment);
+
+        //Create a new request object using our hashmap and url
+        JsonObjectRequest request = volleyPostRequest.getRequestObject(url, paramsMap);
+
+        //Tag our request for post-processing
+        request.setTag(UPDATE_COMMENTS_TAG);
+
+        //Add our request object to the Singleton Volley queue
+        queue.add(request);
+
+        //Close our popupWindow
+        popupWindow.dismiss();
+    }
+
+
+    private void getAndDisplayComments(final ListView listView){
 
         //Retrieve comments from database and assign result to our ArrayList
         final String url = GET_COMMENTS_ENDPOINT + markerID;
@@ -359,6 +382,20 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
+    private void openShareService(){
+        //Default text
+        final String defaultMessage = "This is Whats Happening: ";
+
+        //Default zoom level for map
+        final int zoomLevel = 18;
+
+        //Instatiate new object for creating the Share service
+        ShareMarkerHandler shareMarkerHandler = new ShareMarkerHandler(this);
+
+        //Pass in our parameters to share the marker of interest
+        shareMarkerHandler.shareMarkerLocation(markerPosition, zoomLevel, defaultMessage +
+                "\n" + markerDescription + "\n");
+    }
 
     @Override
     protected void onStop() {
@@ -379,27 +416,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if(actionId == EditorInfo.IME_ACTION_DONE && !userComment.getText().toString().isEmpty()){
-            final String url = POST_COMMENT_ENDPOINT + markerID;
 
-            //Convert our EditText input to a String
-            //Replace comma with tilde for GET response processing later
-            final String comment = userComment.getText().toString().replaceAll(",","~");
-
-            //Create comment HashMap to hold data
-            HashMap<String, String> paramsMap = new HashMap<>();
-            paramsMap.put("comment", comment);
-
-            //Create a new request object using our hashmap and url
-            JsonObjectRequest request = volleyPostRequest.getRequestObject(url, paramsMap);
-
-            //Tag our request for post-processing
-            request.setTag(UPDATE_COMMENTS_TAG);
-
-            //Add our request object to the Singleton Volley queue
-            queue.add(request);
-
-            //Close our popupWindow
-            popupWindow.dismiss();
+            //Post a new comment if our input isn't empty
+            postNewComment();
 
             return true;
         }
@@ -425,17 +444,11 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         int id = item.getItemId();
 
         if(id == R.id.socialMediaShare){
-
-            //Default text
-            final String defaultMessage = "This is Whats Happening: ";
-            final int zoomLevel = 18;
-            ShareMarkerHandler shareMarkerHandler = new ShareMarkerHandler(this);
-            shareMarkerHandler.shareMarkerLocation(markerPosition, zoomLevel, defaultMessage +
-                "\n" + markerDescription + "\n");
+            //open the share service so user can share their marker of interest
+            openShareService();
 
             return true;
         }
@@ -464,7 +477,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         }
         if(request.getTag() == UPDATE_COMMENTS_TAG){
             //Update our comments list to refresh newly added comments
-            setAndDisplayComments(commentsListView);
+            getAndDisplayComments(commentsListView);
         }
     }
 }
