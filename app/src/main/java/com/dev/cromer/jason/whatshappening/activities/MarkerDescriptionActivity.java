@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -40,6 +39,7 @@ import com.dev.cromer.jason.whatshappening.networking.VolleyPostRequest;
 import com.dev.cromer.jason.whatshappening.networking.VolleyQueueSingleton;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +55,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private ListView commentsListView;
     private String markerID;
     private LatLng markerPosition;
-    private boolean hasLiked = false;
     private SharedPreferences preferences;
     private FloatingActionButton floatingActionButton;
     private LayoutInflater layoutInflater;
@@ -63,12 +62,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private VolleyPostRequest volleyPostRequest;
     private RequestQueue queue;
     private PopupWindow popupWindow;
+    private boolean hasLiked = false;
 
     //constants
     private static final String DEFAULT_LIKES = "0";
     private static final String UPDATE_LIKES_TAG = "UPDATE_LIKES";
     private static final String UPDATE_COMMENTS_TAG = "UPDATE_COMMENTS";
-    private static final boolean DEFAULT_HAS_LIKED = false;
     private static final String LIKED_STRING = "like";
     private static final String DISLIKED_STRING = "dislike";
     private static final String GET_COMMENTS_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/get_comments/";
@@ -76,6 +75,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private static final String GET_LIKES_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/get_marker_likes/";
     private static final String GET_DESCRIPTION_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/get_marker_description/";
     private static final String UPDATE_LIKES_ENDPOINT = "http://whatsappeningapi.elasticbeanstalk.com/api/update_marker_likes/";
+    private static final boolean DEFAULT_HAS_LIKED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +140,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                 markerDescription = response;
                 markerDescription = markerDescription.replace("\"", "");
 
-                //Set marker markerDescription and likes in their textviews
+                //Display description in the textView
                 displayMarkerDescription();
             }
         }, new Response.ErrorListener() {
@@ -173,6 +173,8 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             @Override
             public void onResponse(String response) {
                 markerLikes = response;
+
+                //Display the likes in the textView
                 displayMarkerLikes();
             }
         }, new Response.ErrorListener() {
@@ -196,7 +198,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             Toast.makeText(getApplicationContext(), errorResponseString, Toast.LENGTH_LONG).show();
         }
     }
-
 
 
     private void displayMarkerLikes(){
@@ -330,9 +331,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //Add our request object to the Singleton Volley queue
         queue.add(request);
-
-        //Close our popupWindow
-        popupWindow.dismiss();
     }
 
 
@@ -344,31 +342,16 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         StringRequest request = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                String commentsAsString = response;
-                Log.d("onRESPONSE", response);
 
-                if(commentsAsString != null){
+                //Format our comment string into a list
+                List<String> commentsList = formatCommentList(response);
 
-                    //We remove the brackets and quotations
-                    commentsAsString = commentsAsString.replace("[", "");
-                    commentsAsString = commentsAsString.replace("]", "");
-                    commentsAsString = commentsAsString.replace("\"", "");
+                //Create an adapter for our listView
+                ArrayAdapter adapter = new ArrayAdapter<>(MarkerDescriptionActivity.this,
+                        R.layout.comment_item, R.id.commentTextView, commentsList);
 
-                    //Remove any additional white space with the regex \\s*
-                    List<String> commentsList = Arrays.asList(commentsAsString.split("\\s*, \\s*"));
-
-                    //We replaced comma's with tilde's in the POST request, and now we reverse it
-                    for(int i = 0; i < commentsList.size(); i++){
-                        if(commentsList.get(i).contains("~")){
-                            commentsList.set(i, commentsList.get(i).replace("~", ","));
-                        }
-                    }
-
-                    //set our adapter with our list of comments to the listView
-                    listView.setAdapter(new ArrayAdapter<>(MarkerDescriptionActivity.this,
-                            R.layout.comment_item, R.id.commentTextView, commentsList));
-
-                }
+                //set our adapter with our list of comments to the listView
+                listView.setAdapter(adapter);
 
             }
         }, new Response.ErrorListener() {
@@ -381,6 +364,27 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         queue.add(request);
     }
 
+    private List<String> formatCommentList(String input){
+        List<String> commentsList = new ArrayList<>();
+
+        if(input != null){
+            //We remove the brackets and quotations
+            input = input.replace("[", "").replace("]", "").replace("\"", "");
+
+            //Remove any additional white space with the regex \\s*
+            commentsList = Arrays.asList(input.split("\\s*, \\s*"));
+
+
+            //We replaced comma's with tilde's in the POST request, and now we reverse it
+            for(int i = 0; i < commentsList.size(); i++){
+                if(commentsList.get(i).contains("~")){
+                    commentsList.set(i, commentsList.get(i).replace("~", ","));
+                }
+            }
+        }
+
+        return commentsList;
+    }
 
     private void openShareService(){
         //Default text
@@ -420,6 +424,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             //Post a new comment if our input isn't empty
             postNewComment();
 
+            //Close our popupWindow
+            popupWindow.dismiss();
+
             return true;
         }
         return false;
@@ -452,6 +459,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -472,10 +480,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     @Override
     public void onRequestFinished(Request<Object> request) {
         if(request.getTag() == UPDATE_LIKES_TAG){
+
             //Update our likes here to ensure post has finished
             getMarkerLikes();
         }
         if(request.getTag() == UPDATE_COMMENTS_TAG){
+
             //Update our comments list to refresh newly added comments
             getAndDisplayComments(commentsListView);
         }
