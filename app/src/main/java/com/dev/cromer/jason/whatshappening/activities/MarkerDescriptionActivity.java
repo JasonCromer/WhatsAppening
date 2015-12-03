@@ -63,6 +63,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private RequestQueue queue;
     private PopupWindow popupWindow;
     private boolean hasLiked = false;
+    private boolean hasCommented = false;
 
     //constants
     private static final String DEFAULT_LIKES = "0";
@@ -102,7 +103,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         getMarkerLikes();
 
         //Display our comments
-        getAndDisplayComments(commentsListView);
+        getAndDisplayComments();
     }
 
 
@@ -334,7 +335,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
-    private void getAndDisplayComments(final ListView listView){
+    private void getAndDisplayComments(){
 
         //Retrieve comments from database and assign result to our ArrayList
         final String url = GET_COMMENTS_ENDPOINT + markerID;
@@ -351,7 +352,11 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
                         R.layout.comment_item, R.id.commentTextView, commentsList);
 
                 //set our adapter with our list of comments to the listView
-                listView.setAdapter(adapter);
+                commentsListView.setAdapter(adapter);
+
+                if(hasCommented){
+                    scrollToBottom();
+                }
 
             }
         }, new Response.ErrorListener() {
@@ -363,6 +368,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         queue.add(request);
     }
+
+
+    private void scrollToBottom(){
+        //smooth scroll to bottom of newly posted comment
+        commentsListView.setSelection(commentsListView.getCount() - 1);
+    }
+
 
     private List<String> formatCommentList(String input){
         List<String> commentsList = new ArrayList<>();
@@ -386,6 +398,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         return commentsList;
     }
 
+
     private void openShareService(){
         //Default text
         final String defaultMessage = "This is Whats Happening: ";
@@ -400,6 +413,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         shareMarkerHandler.shareMarkerLocation(markerPosition, zoomLevel, defaultMessage +
                 "\n" + markerDescription + "\n");
     }
+
 
     @Override
     protected void onStop() {
@@ -423,6 +437,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
             //Post a new comment if our input isn't empty
             postNewComment();
+
+            //Assert that we have commented
+            hasCommented = true;
 
             //Close our popupWindow
             popupWindow.dismiss();
@@ -487,7 +504,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         if(request.getTag() == UPDATE_COMMENTS_TAG){
 
             //Update our comments list to refresh newly added comments
-            getAndDisplayComments(commentsListView);
+            getAndDisplayComments();
         }
     }
 }
