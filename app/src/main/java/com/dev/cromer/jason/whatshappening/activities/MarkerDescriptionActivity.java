@@ -59,6 +59,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     private FloatingActionButton floatingActionButton;
     private LayoutInflater layoutInflater;
     private EditText userComment;
+    private EditText demoComment;
     private VolleyPostRequest volleyPostRequest;
     private RequestQueue queue;
     private PopupWindow popupWindow;
@@ -114,7 +115,10 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         commentsListView = (ListView) findViewById(R.id.commentsListView);
         floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
         layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        demoComment = (EditText) findViewById(R.id.demoEditText);
 
+        //comment edit text at bottom of screen
+        demoComment.setOnEditorActionListener(this);
         likeButton.setOnClickListener(this);
         floatingActionButton.setOnClickListener(this);
         commentsListView.setOnScrollListener(this);
@@ -235,7 +239,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     public void onClick(View v) {
         if(v == floatingActionButton){
             //Inflate our custom layout
-            inflatePopUpWindow(v);
+            //inflatePopUpWindow(v);
         }
         if(v == likeButton && !hasLiked) {
             likeButton.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_heart_red));
@@ -251,7 +255,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         }
     }
 
-    private void inflatePopUpWindow(View v){
+    /*private void inflatePopUpWindow(View v){
 
         final int popupMarginX = 0;
         final int popupMarginY = 0;
@@ -279,8 +283,6 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Set background (Round edges), and make focusable (keyboard on window press)
         popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.pop_up_background));
         popupWindow.setFocusable(true);
-        popupWindow.setOutsideTouchable(true);
-
 
         //Set custom animation (found in values/styles.xml folder
         popupWindow.setAnimationStyle(R.style.Animation);
@@ -289,6 +291,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Params are (View parent, gravity, int x, int y);
         popupWindow.showAtLocation(v, Gravity.BOTTOM, popupMarginX, popupMarginY);
     }
+    */
 
     private void saveUserLike(){
         SharedPreferences.Editor editor = preferences.edit();
@@ -318,7 +321,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //Convert our EditText input to a String
         //Replace comma with tilde for GET response processing later
-        final String comment = userComment.getText().toString().replaceAll(",","~");
+        final String comment = demoComment.getText().toString().replaceAll(",","~");
 
         //Create comment HashMap to hold data
         HashMap<String, String> paramsMap = new HashMap<>();
@@ -406,7 +409,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         //Default zoom level for map
         final int zoomLevel = 18;
 
-        //Instatiate new object for creating the Share service
+        //Instantiate new object for creating the Share service
         ShareMarkerHandler shareMarkerHandler = new ShareMarkerHandler(this);
 
         //Pass in our parameters to share the marker of interest
@@ -433,7 +436,9 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        if(actionId == EditorInfo.IME_ACTION_DONE && !userComment.getText().toString().isEmpty()){
+        final int isDonePressed = EditorInfo.IME_ACTION_DONE;
+        final boolean isTextEmpty = demoComment.getText().toString().isEmpty();
+        if(actionId == EditorInfo.IME_ACTION_DONE && !isTextEmpty){
 
             //Post a new comment if our input isn't empty
             postNewComment();
@@ -442,7 +447,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
             hasCommented = true;
 
             //Close our popupWindow
-            popupWindow.dismiss();
+            //popupWindow.dismiss();
 
             return true;
         }
