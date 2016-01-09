@@ -104,6 +104,8 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
 
         //comment edit text at bottom of screen
         userComment.setOnEditorActionListener(this);
+
+        //Like button (heart button)
         likeButton.setOnClickListener(this);
     }
 
@@ -142,7 +144,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
     }
 
 
-    //Display
+    //Display the Marker Description we received. Handle null case
     private void displayMarkerDescription(){
         if(markerDescription != null){
             markerDescriptionTextView.setText(markerDescription);
@@ -241,11 +243,13 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         editor.apply();
     }
 
+
     private void saveUserDislike(){
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(markerID, false);
         editor.apply();
     }
+
 
     private void checkUserLike(){
         final boolean userHasLiked = preferences.getBoolean(markerID, DEFAULT_HAS_LIKED);
@@ -379,6 +383,7 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         return true;
     }
 
+
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
@@ -412,12 +417,12 @@ public class MarkerDescriptionActivity extends AppCompatActivity implements View
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_marker_description, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public void onRequestFinished(Request<Object> request) {
