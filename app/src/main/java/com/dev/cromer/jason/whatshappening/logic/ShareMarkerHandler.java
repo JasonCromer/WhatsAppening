@@ -10,7 +10,7 @@ public class ShareMarkerHandler {
 
     private Context appContext;
     private static final String ACTION_INTENT_TEXT = "Share it!";
-    private static final String SHARE_SUBJECT_TEXT = "Here's Whats Happening!";
+    private static final String SHARE_SUBJECT_TEXT = "Here's Whats Happening:";
     private static final String SHARE_TEXT_TYPE = "text/plain";
 
     public ShareMarkerHandler(Context applicationContext){
